@@ -48,4 +48,6 @@ def obtener_marcadores():
     return jsonify(resultados)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    port = int(os.environ.get('PORT', 8000))  # Usa el puerto que Railway proporciona
+    app.run(host='0.0.0.0', port=port)
+
