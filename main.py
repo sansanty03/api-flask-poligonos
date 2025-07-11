@@ -1,9 +1,11 @@
 from flask import Flask, jsonify
+from flask_cors import CORS  # 👈 AÑADE ESTA LÍNEA
 import mysql.connector
 import os
 import json
 
 app = Flask(__name__)
+CORS(app)  # 👈 AÑADE ESTA LÍNEA TAMBIÉN (DESPUÉS DE CREAR app)
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -33,7 +35,7 @@ def obtener_poligonos():
         try:
             r['coordenadas'] = json.loads(r['coordenadas'])
         except:
-            r['coordenadas'] = []  # fallback si hay error
+            r['coordenadas'] = []
 
     return jsonify(resultados)
 
@@ -48,6 +50,5 @@ def obtener_marcadores():
     return jsonify(resultados)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8000))  # Usa el puerto que Railway proporciona
+    port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port)
-
