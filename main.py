@@ -26,11 +26,12 @@ def obtener_poligonos():
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
         SELECT 
-            p.id, p.nombre, p.coordenadas, p.plantel,
+            p.id, p.nombre, p.coordenadas, pl.id AS plantel_id,
             c.nombre AS categoria, c.color, c.fillColor, c.fillOpacity
         FROM poligonos p
         JOIN categorias c ON p.categoria_id = c.id
-        WHERE p.plantel = %s
+        JOIN planteles pl ON p.planteles_id = pl.id
+        WHERE pl.nombre = %s
     """, (plantel,))
     resultados = cursor.fetchall()
     cursor.close()
@@ -44,6 +45,7 @@ def obtener_poligonos():
 
     return jsonify(resultados)
 
+
 @app.route('/marcadores', methods=['GET'])
 def obtener_marcadores():
     plantel = request.args.get('plantel')
@@ -52,7 +54,12 @@ def obtener_marcadores():
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM marcadores WHERE activo = 1 AND plantel = %s", (plantel,))
+    cursor.execute("""
+        SELECT m.*
+        FROM marcadores m
+        JOIN planteles pl ON m.planteles_id = pl.id
+        WHERE m.activo = 1 AND pl.nombre = %s
+    """, (plantel,))
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
