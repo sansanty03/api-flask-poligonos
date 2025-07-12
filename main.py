@@ -1,11 +1,11 @@
-from flask import Flask, jsonify
-from flask_cors import CORS  # 👈 AÑADE ESTA LÍNEA
+from flask import Flask, jsonify, request
 import mysql.connector
 import os
 import json
+from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # 👈 AÑADE ESTA LÍNEA TAMBIÉN (DESPUÉS DE CREAR app)
+CORS(app)
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -18,15 +18,20 @@ def get_db_connection():
 
 @app.route('/poligonos', methods=['GET'])
 def obtener_poligonos():
+    plantel = request.args.get('plantel')
+    if not plantel:
+        return jsonify({"error": "Se requiere el parámetro 'plantel'"}), 400
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
         SELECT 
-            p.id, p.nombre, p.coordenadas,
+            p.id, p.nombre, p.coordenadas, p.plantel,
             c.nombre AS categoria, c.color, c.fillColor, c.fillOpacity
         FROM poligonos p
         JOIN categorias c ON p.categoria_id = c.id
-    """)
+        WHERE p.plantel = %s
+    """, (plantel,))
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -41,9 +46,13 @@ def obtener_poligonos():
 
 @app.route('/marcadores', methods=['GET'])
 def obtener_marcadores():
+    plantel = request.args.get('plantel')
+    if not plantel:
+        return jsonify({"error": "Se requiere el parámetro 'plantel'"}), 400
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM marcadores WHERE activo = 1")
+    cursor.execute("SELECT * FROM marcadores WHERE activo = 1 AND plantel = %s", (plantel,))
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
