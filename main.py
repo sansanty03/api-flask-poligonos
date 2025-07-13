@@ -45,6 +45,27 @@ def obtener_poligonos():
 
     return jsonify(resultados)
 
+@app.route('/aulas')
+def obtener_aulas():
+    plantel = request.args.get('plantel')
+    if not plantel:
+        return jsonify({"error": "Se requiere el parámetro 'plantel'"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT a.id ,a.nombre,a.lat,a.lng,p.nombre AS "Edifcio" 
+        FROM aulas a
+        JOIN poligonos p ON a.poligono_id = p.id
+        JOIN planteles pl ON p.planteles_id = pl.id
+        WHERE a.activo = 1 AND pl.nombre = %s
+    """, (plantel,))
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(resultados)
+
+
 
 @app.route('/marcadores', methods=['GET'])
 def obtener_marcadores():
@@ -64,6 +85,7 @@ def obtener_marcadores():
     cursor.close()
     conn.close()
     return jsonify(resultados)
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
