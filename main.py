@@ -65,8 +65,8 @@ def obtener_aulas():
     conn.close()
     return jsonify(resultados)
 
-@app.route('/delimitacion', methods=['GET'])
-def obtener_delimitacion():
+@app.route('/plantel_coordenadas', methods=['GET'])
+def obtener_coordenadas_plantel():
     plantel = request.args.get('plantel')
     if not plantel:
         return jsonify({"error": "Se requiere el parámetro 'plantel'"}), 400
@@ -74,14 +74,18 @@ def obtener_delimitacion():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT pl.coordenadas AS coordenadas
-        FROM planteles pl
-        WHERE pl.nombre = %s LIMIT 1    
-        """, (plantel,))
-    resultados = cursor.fetchall()
+        SELECT coordenadas FROM planteles WHERE nombre = %s LIMIT 1
+    """, (plantel,))
+    resultado = cursor.fetchone()
     cursor.close()
     conn.close()
-    return jsonify(resultados)
+
+    if resultado and resultado["coordenadas"]:
+        try:
+            resultado["coordenadas"] = json.loads(resultado["coordenadas"])
+        except:
+            resultado["coordenadas"] = []
+    return jsonify(resultado)
 
 
 @app.route('/marcadores', methods=['GET'])
