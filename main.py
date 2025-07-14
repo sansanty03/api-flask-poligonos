@@ -45,7 +45,7 @@ def obtener_poligonos():
 
     return jsonify(resultados)
 
-@app.route('/aulas')
+@app.route('/aulas', methods=['GET'])
 def obtener_aulas():
     plantel = request.args.get('plantel')
     if not plantel:
@@ -65,6 +65,23 @@ def obtener_aulas():
     conn.close()
     return jsonify(resultados)
 
+@app.route('/delimitacion', methods=['GET'])
+def obtener_delimitacion():
+    plantel = request.args.get('plantel')
+    if not plantel:
+        return jsonify({"error": "Se requiere el parámetro 'plantel'"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT pl.coordenadas AS coordenadas
+        FROM planteles pl
+        WHERE pl.nombre = %s LIMIT 1    
+        """, (plantel,))
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(resultados)
 
 
 @app.route('/marcadores', methods=['GET'])
