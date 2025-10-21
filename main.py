@@ -26,7 +26,7 @@ def obtener_poligonos():
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
         SELECT 
-            p.id, p.nombre, p.coordenadas, pl.id AS plantel_id,
+            p.id, p.nombre, p.coordenadas, p.EdificioFisico, pl.id AS plantel_id, 
             c.nombre AS categoria, c.color, c.fillColor, c.fillOpacity
         FROM poligonos p
         JOIN categorias c ON p.categoria_id = c.id
